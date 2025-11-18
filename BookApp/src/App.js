@@ -66,7 +66,7 @@ function App() {
           onLogout={handleLogout}
         />
         <main>
-          <Routes>
+          <Routes future={{ v7_relativeSplatPath: true }}>
             <Route path="/" element={<Home user={user} />} />
             <Route path="/category/:categoryId" element={<CategoryPage />} />
             <Route path="/search" element={<SearchResults searchQuery={searchQuery} />} />

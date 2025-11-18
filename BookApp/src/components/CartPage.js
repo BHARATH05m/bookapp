@@ -10,7 +10,7 @@ function CartPage() {
   const [checkedOut, setCheckedOut] = useState(false);
   const [showUPIPayment, setShowUPIPayment] = useState(false);
   const [showAddressForm, setShowAddressForm] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState(''); // 'upi', 'cod'
+  const [paymentMethod, setPaymentMethod] = useState(''); // only 'upi'
   const [userAddress, setUserAddress] = useState(null);
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
@@ -37,7 +37,7 @@ function CartPage() {
 
   const total = items.reduce((sum, it) => sum + (Number(it.price) || 0), 0);
 
-  const onCheckout = async (method = 'cod') => {
+  const onCheckout = async (method = 'upi') => {
     setPaymentMethod(method);
     setShowAddressForm(true);
   };
@@ -46,21 +46,8 @@ function CartPage() {
     setUserAddress(addressData);
     setShowAddressForm(false);
     
-    if (paymentMethod === 'upi') {
-      setShowUPIPayment(true);
-    } else {
-      // Handle COD directly
-      try {
-        setCheckedOut(true);
-        await checkoutCart(addressData);
-        alert('Order placed successfully! You will receive a confirmation call shortly.');
-        await load();
-      } catch (error) {
-        console.error('Checkout error:', error);
-        alert('Failed to complete checkout. Please try again.');
-        setCheckedOut(false);
-      }
-    }
+    // UPI-only flow
+    setShowUPIPayment(true);
   };
 
   const handleAddressCancel = () => {
@@ -73,12 +60,12 @@ function CartPage() {
     try {
       setShowUPIPayment(false);
       setCheckedOut(true);
-      await checkoutCart(userAddress, transactionId);
+      // Order is already completed by payments verification endpoint
       alert(`Payment successful! Transaction ID: ${transactionId}`);
       await load();
     } catch (error) {
       console.error('Payment success error:', error);
-      alert('Payment successful but order creation failed. Please contact support.');
+      alert('Payment verified, but refreshing cart failed. Please reload the page.');
     }
   };
 
@@ -131,12 +118,6 @@ function CartPage() {
               onClick={() => onCheckout('upi')}
             >
               Pay with UPI
-            </button>
-            <button 
-              className="checkout-btn cod-btn" 
-              onClick={() => onCheckout('cod')}
-            >
-              Cash on Delivery
             </button>
           </div>
         </div>

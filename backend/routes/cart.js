@@ -64,6 +64,11 @@ router.post('/checkout', authenticateToken, async (req, res) => {
     const userId = req.user._id;
     const { address, transactionId } = req.body;
     
+    // UPI-only checkout: require a transactionId
+    if (!transactionId) {
+      return res.status(400).json({ error: 'UPI payment required: missing transactionId' });
+    }
+    
     // Get all cart items for the user
     const cartItems = await CartItem.find({ userId, purchased: false });
     
@@ -73,6 +78,30 @@ router.post('/checkout', authenticateToken, async (req, res) => {
     
     // Calculate total amount
     const totalAmount = cartItems.reduce((sum, item) => sum + (item.price || 0), 0);
+    
+    // Create an Order record
+    const Order = require('../models/Order');
+    // Enforce UPI
+    const paymentMethod = 'upi';
+    const paymentStatus = 'completed';
+    const orderStatus = 'completed';
+    const createdOrder = new Order({
+      userId,
+      items: cartItems.map(item => ({
+        bookId: item.bookId,
+        title: item.title,
+        author: item.author,
+        price: item.price,
+        imageUrl: item.imageUrl
+      })),
+      totalAmount,
+      status: orderStatus,
+      paymentMethod,
+      paymentStatus,
+      transactionId: transactionId,
+      address: address || {}
+    });
+    await createdOrder.save();
     
     // Create purchase records for each item
     const Purchase = require('../models/Purchase');
@@ -87,7 +116,7 @@ router.post('/checkout', authenticateToken, async (req, res) => {
     
     await Purchase.insertMany(purchaseRecords);
     
-    // Mark cart items as purchased or delete them
+    // Clear cart after successful order creation
     await CartItem.deleteMany({ userId, purchased: false });
     
     res.json({
@@ -95,7 +124,8 @@ router.post('/checkout', authenticateToken, async (req, res) => {
       message: 'Checkout successful',
       totalAmount,
       itemCount: cartItems.length,
-      transactionId: transactionId || `TXN${Date.now()}`
+      transactionId: transactionId || `TXN${Date.now()}`,
+      order: createdOrder
     });
     
   } catch (err) {

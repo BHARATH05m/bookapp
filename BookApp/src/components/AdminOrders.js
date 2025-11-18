@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getPurchasedItems } from '../services/cartService';
+import { getAllOrders, updateOrderStatus } from '../services/orderService';
 import './AdminOrders.css';
 
 const AdminOrders = () => {
@@ -10,7 +10,7 @@ const AdminOrders = () => {
     const fetchOrders = async () => {
       try {
         setLoading(true);
-        const ordersData = await getPurchasedItems();
+        const ordersData = await getAllOrders();
         setOrders(ordersData);
       } catch (error) {
         console.error('Error fetching orders:', error);
@@ -31,6 +31,21 @@ const AdminOrders = () => {
     );
   }
 
+  const handleUpdateStatus = async (orderId, status) => {
+    try {
+      await updateOrderStatus(orderId, status);
+      // Refresh list
+      setLoading(true);
+      const refreshed = await getAllOrders();
+      setOrders(refreshed);
+    } catch (e) {
+      console.error('Failed to update order status', e);
+      alert('Failed to update order status');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="container admin-orders">
       <h1>User Orders</h1>
@@ -43,12 +58,14 @@ const AdminOrders = () => {
               <th>Total Amount</th>
               <th>Order Date</th>
               <th>Status</th>
+              <th>Payment</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             {orders.length === 0 ? (
               <tr>
-                <td colSpan="5" className="no-orders">No orders found</td>
+                <td colSpan="7" className="no-orders">No orders found</td>
               </tr>
             ) : (
               orders.map((order) => (
@@ -86,6 +103,28 @@ const AdminOrders = () => {
                     <span className={`status-badge ${order.status}`}>
                       {order.status}
                     </span>
+                  </td>
+                  <td className="payment-cell">
+                    <div><strong>Method:</strong> {order.paymentMethod || 'n/a'}</div>
+                    <div><strong>Status:</strong> {order.paymentStatus || 'n/a'}</div>
+                    {order.transactionId ? (
+                      <div><strong>Txn:</strong> {order.transactionId}</div>
+                    ) : null}
+                  </td>
+                  <td className="actions-cell">
+                    <button
+                      disabled={order.status === 'completed'}
+                      onClick={() => handleUpdateStatus(order._id, 'completed')}
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      disabled={order.status === 'cancelled'}
+                      onClick={() => handleUpdateStatus(order._id, 'cancelled')}
+                      style={{ marginLeft: 8 }}
+                    >
+                      Cancel
+                    </button>
                   </td>
                 </tr>
               ))

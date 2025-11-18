@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 import './Login.css';
 
 const Login = ({ onLogin }) => {
@@ -59,49 +60,40 @@ const Login = ({ onLogin }) => {
     }
 
     try {
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+      const endpoint = isLogin ? '/auth/login' : '/auth/register';
       const requestBody = isLogin 
         ? { email: formData.email, password: formData.password }
         : { username: formData.username, email: formData.email, password: formData.password };
 
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
-      const response = await fetch(`${backendUrl}${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const { data } = await api.post(endpoint, requestBody);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        // Store token and user data
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        
-        // Call the onLogin callback
-        if (onLogin) {
-          onLogin(data.user);
-        }
-        
-        // Navigate: new users without favoriteGenres go to selection
-        if (!isLogin && (data.user.role !== 'admin') && (!data.user.favoriteGenres || data.user.favoriteGenres.length === 0)) {
-          navigate('/choose-genre');
-        } else {
-          navigate('/');
-        }
+      // Store token and user data
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      
+      // Call the onLogin callback
+      if (onLogin) {
+        onLogin(data.user);
+      }
+      
+      // Navigate: new users without favoriteGenres go to selection
+      if (!isLogin && (data.user.role !== 'admin') && (!data.user.favoriteGenres || data.user.favoriteGenres.length === 0)) {
+        navigate('/choose-genre');
       } else {
-        // Handle validation errors array
-        if (data.errors && Array.isArray(data.errors)) {
-          setError(data.errors.join(', '));
-        } else {
-          setError(data.message || 'An error occurred');
-        }
+        navigate('/');
       }
     } catch (err) {
       console.error('Registration/Login error:', err);
-      setError('Network error. Please check your connection.');
+      if (err.response && err.response.data) {
+        const data = err.response.data;
+        if (data.errors && Array.isArray(data.errors)) {
+          setError(data.errors.join(', '));
+        } else {
+          setError(data.message || 'Login failed');
+        }
+      } else {
+        setError('Network error. Please check your connection.');
+      }
     } finally {
       setLoading(false);
     }

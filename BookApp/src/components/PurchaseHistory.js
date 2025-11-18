@@ -24,10 +24,10 @@ const PurchaseHistory = () => {
       console.log('Auth token exists:', !!token);
       console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'No token');
       
-      // Test basic API connection first
+      // Test basic API connection first (backend exposes /api/health)
       console.log('Testing basic API connection...');
-      const basicResponse = await api.get('/');
-      console.log('Basic API response:', basicResponse.data);
+      const basicResponse = await api.get('/health');
+      console.log('Basic API health response:', basicResponse.data);
       
       // Test purchases route
       console.log('Testing purchases route...');

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 import './FavoriteGenre.css';
 import { allowedGenres } from '../constants/genres';
 
@@ -32,21 +33,8 @@ const FavoriteGenre = () => {
     try {
       setSaving(true);
       setError('');
-      const token = localStorage.getItem('token');
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5001';
-      const response = await fetch(`${backendUrl}/api/auth/profile`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ favoriteGenres: selected })
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to save');
-      }
+      // Use shared axios client; it attaches Authorization header automatically
+      const { data } = await api.put('/auth/profile', { favoriteGenres: selected });
 
       // Update user in localStorage
       const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -56,7 +44,8 @@ const FavoriteGenre = () => {
       // Force reload so App reads updated localStorage and stops gating
       window.location.replace('/');
     } catch (e) {
-      setError(e.message);
+      const msg = e?.response?.data?.message || e.message || 'Failed to save';
+      setError(msg);
     } finally {
       setSaving(false);
     }

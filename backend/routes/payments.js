@@ -106,6 +106,24 @@ router.post('/upi/verify', authenticateToken, async (req, res) => {
       
       await order.save();
       
+      // Record purchases for reporting
+      try {
+        const Purchase = require('../models/Purchase');
+        const purchaseRecords = (order.items || []).map(item => ({
+          bookId: item.bookId,
+          title: item.title,
+          author: item.author,
+          price: item.price,
+          quantity: 1,
+          userId: order.userId
+        }));
+        if (purchaseRecords.length > 0) {
+          await Purchase.insertMany(purchaseRecords);
+        }
+      } catch (e) {
+        console.error('Failed to create purchase records after UPI success:', e);
+      }
+
       // Clear cart
       await CartItem.deleteMany({ userId });
       

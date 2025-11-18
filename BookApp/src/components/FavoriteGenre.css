@@ -12,6 +12,10 @@
   padding: 24px;
   max-width: 980px;
   width: 100%;
+  position: sticky;
+  top: 16px; /* stick 16px from top when scrolling */
+  z-index: 10;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
 }
 
 .genre-card h2 {

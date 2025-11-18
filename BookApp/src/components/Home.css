@@ -10,6 +10,47 @@
   border-radius: 8px;
   padding: 12px;
   height: fit-content;
+  position: sticky;
+  top: 12px; /* stick near top while scrolling */
+  align-self: start; /* ensure sticky works within CSS grid */
+  max-height: calc(100vh - 24px); /* viewport height minus top offset & padding */
+  overflow: auto; /* enable its own scrollbar */
+  scrollbar-gutter: stable; /* prevent layout shift when showing scrollbar */
+  scroll-behavior: smooth; /* smooth internal scrolling */
+  overscroll-behavior: contain; /* avoid bouncing / parent scroll chaining */
+}
+
+/* Custom scrollbar (WebKit browsers) */
+.left-rail::-webkit-scrollbar {
+  width: 10px;
+}
+.left-rail::-webkit-scrollbar-track {
+  background: #e9ecef;
+  border-radius: 8px;
+}
+.left-rail::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+}
+.left-rail::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Custom scrollbar (Firefox) */
+.left-rail {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #e9ecef;
+}
+
+/* Mobile: disable sticky, allow natural flow */
+@media (max-width: 900px) {
+  .left-rail {
+    position: static;
+    top: auto;
+    max-height: none;
+    overflow: visible;
+  }
 }
 
 .search-box input {
