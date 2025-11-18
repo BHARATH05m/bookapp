@@ -1,4 +1,9 @@
-const API_BASE_URL = 'http://localhost:5001/api';
+const backendBase =
+  process.env.REACT_APP_BACKEND_URL ||
+  (typeof window !== 'undefined' && window.__BACKEND_URL__) ||
+  'http://localhost:5001';
+
+const API_BASE_URL = `${backendBase}/api`;
 
 export const reviewService = {
   // Get reviews for a Google Books volumeId
