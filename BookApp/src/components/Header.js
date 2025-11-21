@@ -41,7 +41,6 @@ const Header = ({ searchQuery, setSearchQuery, user, onLogout }) => {
             )}
             {isAdmin && (
               <>
-                <Link to="/admin/add-book" className="nav-link">Add Book</Link>
                 <Link to="/admin/reported-comments" className="nav-link">Admin Panel</Link>
                 <Link to="/admin/orders" className="nav-link">Orders</Link>
               </>

@@ -6,7 +6,6 @@ import CategoryPage from './components/CategoryPage';
 import SearchResults from './components/SearchResults';
 import BookDetail from './components/BookDetail';
 import Login from './components/Login';
-import AddBook from './components/AddBook';
 import EditBook from './components/EditBook';
 import AdminPanel from './components/AdminPanel';
 import AdminOrders from './components/AdminOrders';
@@ -75,7 +74,6 @@ function App() {
             <Route path="/top-selling" element={<TopSellingBooks />} />
             <Route path="/purchase-history" element={!isAdmin ? <PurchaseHistory /> : <Navigate to="/" replace />} />
             <Route path="/edit-book/:bookId" element={isAdmin ? <EditBook /> : <Navigate to="/" replace />} />
-            <Route path="/admin/add-book" element={isAdmin ? <AddBook /> : <Navigate to="/" replace />} />
             <Route path="/admin/reported-comments" element={isAdmin ? <AdminPanel user={user} /> : <Navigate to="/" replace />} />
             <Route path="/admin/orders" element={isAdmin ? <AdminOrders /> : <Navigate to="/" replace />} />
             <Route path="/about" element={<About />} />
